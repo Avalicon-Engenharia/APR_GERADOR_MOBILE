@@ -74,6 +74,9 @@
             background: #fff; display: flex; flex-direction: column; gap: 6px;
             flex-shrink: 0;
         }
+        /* Botões na sidebar ficam ocultos — substituídos pelo FAB flutuante */
+        .sidebar-footer .btn { display: none; }
+        .sidebar-footer { display: none; }
         .btn-pdf {
             background: var(--accent); color: #fff; font-size: 0.85rem;
             padding: 0.7rem; border-radius: 7px; box-shadow: 0 2px 8px rgba(37,99,235,0.25);
@@ -236,6 +239,8 @@
             body { display: block !important; height: auto; overflow: auto; background: #f0f4f8; }
             .sidebar { display: none !important; }
             .workspace { display: none !important; }
+            /* Esconde FAB no mobile — usa mob-footer próprio */
+            .fab-pdf { display: none !important; }
             .mob-header {
                 position: sticky; top: 0; z-index: 100;
                 background: #fff; border-bottom: 1px solid #e2e6ea;
@@ -671,6 +676,13 @@
 </article>
 </div>
 </main>
+
+
+<!-- ── BOTÃO FLUTUANTE DE PDF (desktop/tablet) ── -->
+<div class="fab-pdf">
+    <button class="fab-pdf-btn" id="btnGerar" onclick="gerarPDF()">🖨 Gerar PDF</button>
+    <button class="fab-clear-btn" onclick="if(confirm('Limpar tudo e recomeçar?')) location.reload()">🧹 Limpar</button>
+</div>
 
 <script>
     // SINCRONIZAÇÃO MOBILE → DOCUMENTO A4
