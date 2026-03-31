@@ -242,15 +242,16 @@
             /* Esconde FAB no mobile — usa mob-footer próprio */
             .fab-pdf { display: none !important; }
             .mob-header {
-                position: sticky; top: 0; z-index: 100;
+                position: sticky; top: 0; z-index: 9999;
                 background: #fff; border-bottom: 1px solid #e2e6ea;
-                padding: 0.9rem 1rem; display: flex !important;
-                align-items: center; gap: 10px;
+                padding: 0.75rem 1rem; display: flex !important;
+                align-items: center; gap: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             }
             .mob-header-dot { width: 8px; height: 8px; background: #2563eb; border-radius: 50%; flex-shrink: 0; }
             .mob-header-title { font-weight: 700; font-size: 0.9rem; color: #1e293b; }
             .mob-header-sub { font-size: 0.68rem; color: #64748b; }
-            .mob-form { display: flex !important; flex-direction: column; padding: 1rem; gap: 1rem; padding-bottom: 100px; }
+            .mob-form { display: flex !important; flex-direction: column; padding: 1rem; gap: 1rem; padding-bottom: 2rem; }
             .mob-section { background: #fff; border-radius: 10px; border: 1px solid #e2e6ea; overflow: hidden; }
             .mob-section-title {
                 background: #1e293b; color: #fff; font-size: 0.72rem;
@@ -287,21 +288,19 @@
                 cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
             }
             .mob-btn-add:active { background: #dcfce7; }
-            .mob-footer {
-                position: fixed; bottom: 0; left: 0; right: 0; padding: 0.9rem 1rem;
-                background: #fff; border-top: 1px solid #e2e6ea;
-                display: flex !important; gap: 8px; z-index: 200; box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
-            }
             .mob-btn-pdf {
-                flex: 1; padding: 0.85rem; background: #2563eb; color: #fff;
-                border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700;
-                font-family: 'Inter', sans-serif; cursor: pointer; box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+                background: #2563eb; color: #fff;
+                border: none; font-weight: 700;
+                font-family: 'Inter', sans-serif; cursor: pointer;
+                box-shadow: 0 2px 6px rgba(37,99,235,0.3);
+                white-space: nowrap;
             }
             .mob-btn-pdf:disabled { background: #94a3b8; box-shadow: none; }
             .mob-btn-clear {
-                padding: 0.85rem 1rem; background: transparent; color: #64748b;
-                border: 1.5px solid #e2e6ea; border-radius: 8px;
-                font-size: 0.85rem; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer;
+                background: transparent; color: #64748b;
+                border: 1.5px solid #e2e6ea;
+                font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer;
+                white-space: nowrap;
             }
             .mob-outros { display: flex; gap: 8px; align-items: center; padding: 0.65rem 0.9rem; border-bottom: none; }
             .mob-outros input[type="text"] {
@@ -322,18 +321,20 @@
             }
             .mob-risco-extra-row input:focus { border-color: #2563eb; background: #fff; }
         }
-        .mob-header, .mob-form, .mob-footer { display: none; }
+        .mob-header, .mob-form { display: none; }
     </style>
 </head>
 <body>
 
-<!-- MOBILE: HEADER -->
+<!-- MOBILE: HEADER com botão PDF embutido (sticky, nunca some) -->
 <div class="mob-header">
     <div class="mob-header-dot"></div>
-    <div>
+    <div style="flex:1">
         <div class="mob-header-title">AVALICON</div>
         <div class="mob-header-sub">Gerador APR-D</div>
     </div>
+    <button class="mob-btn-pdf" id="mob-btnGerar" onclick="gerarPDF()" style="flex-shrink:0;padding:0.55rem 1rem;font-size:0.8rem;border-radius:8px;">🖨 PDF</button>
+    <button class="mob-btn-clear" onclick="if(confirm('Limpar tudo?')) location.reload()" style="flex-shrink:0;padding:0.55rem 0.7rem;border-radius:8px;font-size:0.8rem;margin-left:4px;">🧹</button>
 </div>
 
 <!-- MOBILE: FORMULÁRIO -->
@@ -479,11 +480,7 @@
 
 </div>
 
-<!-- MOBILE: RODAPÉ -->
-<div class="mob-footer">
-    <button class="mob-btn-pdf" id="mob-btnGerar" onclick="gerarPDF()">🖨 Gerar / Imprimir PDF</button>
-    <button class="mob-btn-clear" onclick="if(confirm('Limpar tudo?')) location.reload()">🧹</button>
-</div>
+<!-- MOBILE: RODAPÉ REMOVIDO — botão migrado para o header sticky -->
 
 <!-- SIDEBAR (desktop) -->
 <aside class="sidebar">
@@ -513,7 +510,7 @@
         </div>
     </div>
     <div class="sidebar-footer">
-        <button class="btn btn-pdf" id="btnGerar" onclick="gerarPDF()">🖨 Gerar PDF</button>
+        <button class="btn btn-pdf" id="btnGerarSidebar" onclick="gerarPDF()">🖨 Gerar PDF</button>
         <button class="btn btn-clear" onclick="if(confirm('Limpar tudo e recomeçar?')) location.reload()">🧹 Limpar Formulário</button>
     </div>
 </aside>
@@ -874,7 +871,7 @@
         const isMobile = window.innerWidth <= 1024;
         const btn = isMobile
             ? document.getElementById('mob-btnGerar')
-            : document.getElementById('btnGerar');
+            : (document.getElementById('btnGerar') || document.getElementById('btnGerarSidebar'));
         if (!btn) return;
         btn.textContent = '⌛ Aguarde...';
         btn.disabled = true;
@@ -1006,7 +1003,7 @@
                     pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
                     pdf.save('APR_AVALICON.pdf');
 
-                    btn.textContent = '🖨 Gerar PDF';
+                    btn.textContent = '🖨 PDF';
                     btn.disabled = false;
                 }).catch(err => {
                     if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
