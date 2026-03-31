@@ -52,11 +52,10 @@
         }
         .brand-logo {
             width: 36px; height: 36px; border-radius: 8px;
-            background: rgba(255,255,255,0.18);
-            border: 1.5px solid rgba(255,255,255,0.3);
+            background: #ffffff;
+            border: 1.5px solid rgba(255,255,255,0.5);
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; flex-shrink: 0;
-            backdrop-filter: blur(4px);
         }
         .brand-logo img { width: 28px; height: 28px; object-fit: contain; }
         .brand-dot {
@@ -175,7 +174,7 @@
         /* SEÇÃO HEADER */
         .sec {
             background: #d9d9d9; border: 1.5px solid #000; border-top: none;
-            text-align: center; padding: 4px; font-size: 9px; font-weight: bold;
+            text-align: center; padding: 4px; font-size: 10px; font-weight: bold;
             text-transform: uppercase; flex-shrink: 0;
         }
         /* GRIDS */
@@ -186,7 +185,7 @@
         }
         .ci {
             padding: 3px 5px; display: flex; align-items: flex-start;
-            gap: 4px; font-size: 8.5px; line-height: 1.3;
+            gap: 4px; font-size: 9.5px; line-height: 1.35;
             border-right: 1px solid #000; border-bottom: 1px solid #000; min-height: 23px;
         }
         .ci input[type="checkbox"] { width: 10px; height: 10px; flex-shrink: 0; margin-top: 1px; cursor: pointer; accent-color: #000; }
@@ -203,7 +202,7 @@
         /* TABELA RISCOS ADICIONAIS */
         .riscos-extras {
             border: 1.5px solid #000; border-top: none; flex-shrink: 0;
-            font-size: 8.5px;
+            font-size: 9.5px;
         }
         .riscos-extras-header {
             background: #f5f5f5; border-bottom: 1px solid #000;
@@ -229,7 +228,7 @@
         .riscos-extras-cell:last-child { border-right: none; }
         .riscos-extras-cell input {
             width: 100%; border: none; background: transparent;
-            outline: none; font-size: 7.5px; font-family: Arial; height: 100%;
+            outline: none; font-size: 9px; font-family: Arial; height: 100%;
         }
         /* ASSINATURAS - div-based (consistente com riscos-extras) */
         .sig-wrap {
@@ -239,7 +238,7 @@
             display: flex; border-bottom: 1px solid #000;
         }
         .sig-col-h {
-            background: #d9d9d9; padding: 3px 5px; font-size: 8.5px;
+            background: #d9d9d9; padding: 3px 5px; font-size: 9.5px;
             font-weight: bold; text-align: center; border-right: 1px solid #000;
         }
         .sig-col-h:last-child { border-right: none; }
@@ -254,7 +253,7 @@
         .sig-div-cell:last-child { border-right: none; }
         .sig-div-cell input {
             width: 100%; border: none; background: transparent;
-            outline: none; font-size: 8.5px; font-family: Arial;
+            outline: none; font-size: 9.5px; font-family: Arial;
         }
         /* ESPAÇADOR */
         .spacer { flex: 1; min-height: 4px; }
@@ -504,10 +503,7 @@
             <label class="mob-check-item"><input type="checkbox" data-sync="risco-29"> <span>30. Corpos d'água / armazenamento de líquidos</span></label>
             <label class="mob-check-item"><input type="checkbox" data-sync="risco-30"> <span>31. Condições das ferramentas / máquinas</span></label>
             <label class="mob-check-item"><input type="checkbox" data-sync="risco-31"> <span>32. Trabalho em altura</span></label>
-            <div class="mob-outros">
-                <span style="font-size:0.85rem;color:#1e293b;white-space:nowrap">33. Outros:</span>
-                <input type="text" placeholder="Descreva o risco" oninput="setDocInput('risco-outros', this.value)">
-            </div>
+
         </div>
     </div>
 
@@ -590,12 +586,18 @@
             <!-- Formulário para adicionar novo elaborador -->
             <div style="background:#fff;border:1.5px dashed #cbd5e1;border-radius:10px;padding:0.8rem;display:flex;flex-direction:column;gap:0.6rem;">
                 <div style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Novo Elaborador</div>
-                <div style="display:flex;gap:8px;">
-                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-                        <label class="mob-label">Nome / CPF</label>
-                        <input type="text" class="mob-input" id="mob-sNome" placeholder="Nome completo / CPF">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="display:flex;gap:8px;">
+                        <div style="flex:2;display:flex;flex-direction:column;gap:4px;">
+                            <label class="mob-label">Nome completo</label>
+                            <input type="text" class="mob-input" id="mob-sNome" placeholder="Nome completo">
+                        </div>
+                        <div style="flex:1.5;display:flex;flex-direction:column;gap:4px;">
+                            <label class="mob-label">CPF</label>
+                            <input type="text" class="mob-input" id="mob-sCpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+                        </div>
                     </div>
-                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                    <div style="display:flex;flex-direction:column;gap:4px;">
                         <label class="mob-label">Data/Hora Término</label>
                         <input type="text" class="mob-input" id="mob-sTermino" placeholder="dd/mm/aaaa hh:mm" maxlength="16" oninput="mascaraDataHora(this)">
                     </div>
@@ -645,7 +647,8 @@
         </div>
         <div class="sg" style="animation-delay:0.25s">
             <div class="sg-label"><span>✍️</span> Adicionar Elaborador</div>
-            <input type="text" class="si" id="sNome" placeholder="Nome / CPF" onkeydown="if(event.key==='Enter') adicionarNome()">
+            <input type="text" class="si" id="sNome" placeholder="Nome completo" onkeydown="if(event.key==='Enter') adicionarNome()">
+            <input type="text" class="si" id="sCpf" placeholder="CPF: 000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
             <input type="text" class="si" id="sTermino" placeholder="dd/mm/aaaa hh:mm" maxlength="16" oninput="mascaraDataHora(this)">
             <button class="btn btn-add" onclick="adicionarNome()">＋ Inserir na Tabela</button>
         </div>
@@ -668,7 +671,7 @@
             <span id="logo-ph" class="logo-placeholder" style="display:none">Seu<br>Logo</span>
         </div>
         <div class="title-box">
-            <h1 contenteditable="true">Análise Preliminar de Riscos Diária – APR-D</h1>
+            <h1>Análise Preliminar de Riscos Diária – APR-D</h1>
         </div>
     </div>
 
@@ -682,7 +685,7 @@
     </div>
 
     <!-- RISCOS -->
-    <div class="sec" contenteditable="true">Riscos de Segurança, Saúde e Meio Ambiente</div>
+    <div class="sec">Riscos de Segurança, Saúde e Meio Ambiente</div>
     <div class="grid">
         <label class="ci ci-3"><input type="checkbox"> 1. Ataque de animais/insetos</label>
         <label class="ci ci-3"><input type="checkbox"> 12. Intempéries</label>
@@ -716,11 +719,10 @@
         <label class="ci ci-3"><input type="checkbox"> 32. Trabalho em altura</label>
         <label class="ci ci-3"><input type="checkbox"> 11. Ruído</label>
         <label class="ci ci-3"><input type="checkbox"> 22. Fluidos e vapores</label>
-        <label class="ci ci-3"><input type="checkbox"> 33. Outros:&nbsp;<input type="text" class="txt-fill"></label>
     </div>
 
     <!-- EPI -->
-    <div class="sec" contenteditable="true">Equipamento de Proteção Individual – EPI</div>
+    <div class="sec">Equipamento de Proteção Individual – EPI</div>
     <div class="grid">
         <label class="ci ci-5"><input type="checkbox"> Capuz de fuga (insetos)</label>
         <label class="ci ci-5"><input type="checkbox"> Capacete com jugular</label>
@@ -746,7 +748,7 @@
     </div>
 
     <!-- CONTROLES -->
-    <div class="sec" contenteditable="true">Controles Preventivos – O Que Fazer</div>
+    <div class="sec">Controles Preventivos – O Que Fazer</div>
     <div class="grid">
         <label class="ci ci-ctrl"><input type="checkbox"> Avaliar as condições do local de trabalho, de forma prévia</label>
         <label class="ci ci-ctrl"><input type="checkbox"> Verificar e avaliar as condições das vias a serem trafegadas, principalmente em área Rural, de forma prévia</label>
@@ -782,12 +784,11 @@
             <div class="riscos-extras-row"><div class="riscos-extras-cell"><input type="text" class="extra-risco" placeholder=""></div><div class="riscos-extras-cell"><input type="text" class="extra-ctrl" placeholder=""></div></div>
             <div class="riscos-extras-row"><div class="riscos-extras-cell"><input type="text" class="extra-risco" placeholder=""></div><div class="riscos-extras-cell"><input type="text" class="extra-ctrl" placeholder=""></div></div>
             <div class="riscos-extras-row"><div class="riscos-extras-cell"><input type="text" class="extra-risco" placeholder=""></div><div class="riscos-extras-cell"><input type="text" class="extra-ctrl" placeholder=""></div></div>
-            <div class="riscos-extras-row"><div class="riscos-extras-cell"><input type="text" class="extra-risco" placeholder=""></div><div class="riscos-extras-cell"><input type="text" class="extra-ctrl" placeholder=""></div></div>
         </div>
     </div>
 
     <!-- ASSINATURAS -->
-    <div class="sec" contenteditable="true">Nome e Assinatura dos Elaboradores</div>
+    <div class="sec">Nome e Assinatura dos Elaboradores</div>
     <div class="sig-wrap">
         <div class="sig-cols">
             <div class="sig-col-h" style="width:38%">Nome / CPF</div>
@@ -795,17 +796,16 @@
             <div class="sig-col-h" style="width:30%">Data / hora do Término da atividade operacional</div>
         </div>
         <div id="sig-body">
-            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" placeholder="dd/mm/aaaa hh:mm" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
-            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" placeholder="dd/mm/aaaa hh:mm" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
-            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" placeholder="dd/mm/aaaa hh:mm" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
-            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" placeholder="dd/mm/aaaa hh:mm" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
+            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
+            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
+            <div class="sig-div-row"><div class="sig-div-cell" style="width:38%"><input type="text" class="col-nome" oninput="autoShrink(this)"></div><div class="sig-div-cell" style="width:32%"></div><div class="sig-div-cell" style="width:30%"><input type="text" class="sig-time" maxlength="16" style="text-align:center;width:100%" oninput="mascaraDataHora(this)"></div></div>
         </div>
     </div>
 
     <div class="spacer"></div>
 
     <!-- RODAPÉ -->
-    <footer class="doc-footer" contenteditable="true">
+    <footer class="doc-footer">
         Rua Brasópolis, 182, Floresta/ Belo Horizonte - MG<br>
         CEP: 30150-170 - Fone: (31) 3481-9771<br>
         EMAIL: avalicon@avalicon.com.br | www.avalicon.com.br
@@ -988,8 +988,10 @@
     // Elaboradores no mobile
     function mobAdicionarNome() {
         const nome = document.getElementById('mob-sNome').value.trim();
+        const cpf  = document.getElementById('mob-sCpf') ? document.getElementById('mob-sCpf').value.trim() : '';
         const termino = document.getElementById('mob-sTermino').value.trim();
-        if (!nome) { alert('Digite o Nome/CPF!'); return; }
+        if (!nome) { alert('Digite o Nome!'); return; }
+        const nomeCompleto = cpf ? nome + ' / ' + cpf : nome;
 
         // Usa a assinatura capturada no modal
         const sigDataURL = _sigDataURL || null;
@@ -999,7 +1001,7 @@
         let rowIndex = -1, inserido = false;
         for (let i = 0; i < cols.length; i++) {
             if (cols[i].value === '') {
-                cols[i].value = nome;
+                cols[i].value = nomeCompleto;
                 autoShrink(cols[i]);
                 const row = cols[i].closest('.sig-div-row');
                 if (row) {
@@ -1029,7 +1031,7 @@
         card.className = 'mob-elab-card';
         card.innerHTML = `
             <div class="mob-elab-card-num">Elaborador ${n}</div>
-            <div class="mob-elab-card-nome">${nome}</div>
+            <div class="mob-elab-card-nome">${nomeCompleto}</div>
             ${termino ? `<div class="mob-elab-card-termino">⏱ ${termino}</div>` : ''}
             ${sigDataURL ? `
             <div style="background:#fff;border:1px solid #e2e6ea;border-radius:6px;padding:4px 8px;">
@@ -1073,6 +1075,14 @@
         list.appendChild(item);
         document.getElementById('mob-extra-risco').value = '';
         document.getElementById('mob-extra-ctrl').value = '';
+    }
+
+    function mascaraCPF(el) {
+        let v = el.value.replace(/\D/g, '').substring(0, 11);
+        if (v.length > 9)      v = v.substring(0,3)+'.'+v.substring(3,6)+'.'+v.substring(6,9)+'-'+v.substring(9);
+        else if (v.length > 6) v = v.substring(0,3)+'.'+v.substring(3,6)+'.'+v.substring(6);
+        else if (v.length > 3) v = v.substring(0,3)+'.'+v.substring(3);
+        el.value = v;
     }
 
     function mascaraData(el) {
@@ -1161,13 +1171,15 @@
 
     function adicionarNome() {
         const nome = document.getElementById('sNome').value.trim();
+        const cpf  = document.getElementById('sCpf') ? document.getElementById('sCpf').value.trim() : '';
         const termino = document.getElementById('sTermino').value.trim();
-        if (!nome) { alert('Digite o Nome/CPF!'); return; }
+        if (!nome) { alert('Digite o Nome!'); return; }
+        const nomeCompleto = cpf ? nome + ' / ' + cpf : nome;
         const cols = document.querySelectorAll('.col-nome');
         let inserido = false;
         for (let inp of cols) {
             if (inp.value === '') {
-                inp.value = nome;
+                inp.value = nomeCompleto;
                 autoShrink(inp);
                 const row = inp.closest('.sig-div-row');
                 if (termino && row) row.querySelector('.sig-time').value = termino;
@@ -1177,6 +1189,7 @@
         }
         if (!inserido) alert('Todas as linhas já estão preenchidas.');
         document.getElementById('sNome').value = '';
+        if (document.getElementById('sCpf')) document.getElementById('sCpf').value = '';
         document.getElementById('sNome').focus();
     }
 
@@ -1324,7 +1337,7 @@
                     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
                     const imgData = canvas.toDataURL('image/jpeg', 0.92);
                     pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-                    pdf.save('APR_AVALICON.pdf');
+                    const hoje = new Date(); const dd = String(hoje.getDate()).padStart(2,'0'); const mm = String(hoje.getMonth()+1).padStart(2,'0'); const aaaa = hoje.getFullYear(); pdf.save(`APR-D_${dd}-${mm}-${aaaa}.pdf`);
 
                     btn.textContent = '🖨 PDF';
                     btn.disabled = false;
@@ -1354,35 +1367,35 @@ html,body { width:210mm; background:white; -webkit-print-color-adjust:exact; pri
 .id-strip{border:1.5px solid #000;border-top:none;flex-shrink:0}
 .id-row{display:flex;border-bottom:1px solid #000}
 .id-row:last-child{border-bottom:none}
-.id-cell{padding:4px 6px;font-size:8.5px;font-weight:bold;min-height:26px;flex:1;border-right:1px solid #000;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.id-cell{padding:4px 6px;font-size:10px;font-weight:bold;min-height:26px;flex:1;border-right:1px solid #000;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .id-cell:last-child{border-right:none}
 .id-input{border:none;background:transparent;font-size:10px;font-family:Arial;font-weight:bold;flex:1;min-width:30px}
-.sec{background:#d9d9d9;border:1.5px solid #000;border-top:none;text-align:center;padding:4px;font-size:9px;font-weight:bold;text-transform:uppercase;flex-shrink:0}
+.sec{background:#d9d9d9;border:1.5px solid #000;border-top:none;text-align:center;padding:4px;font-size:10px;font-weight:bold;text-transform:uppercase;flex-shrink:0}
 .grid{display:flex;flex-wrap:wrap;border-left:1.5px solid #000;border-right:1.5px solid #000;border-bottom:1.5px solid #000;flex-shrink:0}
-.ci{padding:3px 5px;display:flex;align-items:flex-start;gap:4px;font-size:8.5px;line-height:1.3;border-right:1px solid #000;border-bottom:1px solid #000;min-height:23px}
+.ci{padding:3px 5px;display:flex;align-items:flex-start;gap:4px;font-size:9.5px;line-height:1.35;border-right:1px solid #000;border-bottom:1px solid #000;min-height:23px}
 .ci input[type="checkbox"]{width:10px;height:10px;flex-shrink:0;margin-top:1px;accent-color:#000}
 .ci-3{width:33.333%}.ci-3:nth-child(3n){border-right:none}
 .ci-5{width:20%}.ci-5:nth-child(5n){border-right:none}
 .ci-ctrl{width:33.333%}.ci-ctrl:nth-child(3n){border-right:none}
 .txt-fill{border:none;border-bottom:1px dashed #999;background:transparent;font-size:8px;font-family:Arial;flex:1;min-width:50px}
-.riscos-extras{border:1.5px solid #000;border-top:none;flex-shrink:0;font-size:8.5px}
+.riscos-extras{border:1.5px solid #000;border-top:none;flex-shrink:0;font-size:9.5px}
 .riscos-extras-cols{display:flex;border-bottom:1px solid #000}
-.riscos-extras-col-h{background:#d9d9d9;padding:3px 5px;font-size:8.5px;font-weight:bold;text-align:center;border-right:1px solid #000}
+.riscos-extras-col-h{background:#d9d9d9;padding:3px 5px;font-size:9.5px;font-weight:bold;text-align:center;border-right:1px solid #000}
 .riscos-extras-col-h:last-child{border-right:none}
 .riscos-extras-row{display:flex;border-bottom:1px solid #000;min-height:22px}
 .riscos-extras-row:last-child{border-bottom:none}
 .riscos-extras-cell{flex:1;border-right:1px solid #000;padding:2px 4px;min-height:22px}
 .riscos-extras-cell:last-child{border-right:none}
-.riscos-extras-cell input{width:100%;border:none;background:transparent;font-size:8.5px;font-family:Arial;height:100%}
+.riscos-extras-cell input{width:100%;border:none;background:transparent;font-size:9px;font-family:Arial;height:100%}
 .sig-wrap{border:1.5px solid #000;border-top:none;flex-shrink:0}
 .sig-cols{display:flex;border-bottom:1px solid #000}
-.sig-col-h{background:#d9d9d9;padding:3px 5px;font-size:8.5px;font-weight:bold;text-align:center;border-right:1px solid #000}
+.sig-col-h{background:#d9d9d9;padding:3px 5px;font-size:9.5px;font-weight:bold;text-align:center;border-right:1px solid #000}
 .sig-col-h:last-child{border-right:none}
 .sig-div-row{display:flex;border-bottom:1px solid #000;min-height:36px}
 .sig-div-row:last-child{border-bottom:none}
 .sig-div-cell{border-right:1px solid #000;padding:2px 4px;min-height:36px;display:flex;align-items:center}
 .sig-div-cell:last-child{border-right:none}
-.sig-div-cell input{width:100%;border:none;background:transparent;font-size:8.5px;font-family:Arial}
+.sig-div-cell input{width:100%;border:none;background:transparent;font-size:9.5px;font-family:Arial}
 .spacer{flex:1;min-height:4px}
 .doc-footer{border-top:1.5px solid #000;padding-top:4px;text-align:center;font-size:8px;font-weight:bold;line-height:1.7;flex-shrink:0}
 [contenteditable]{outline:none}
