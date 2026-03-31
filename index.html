@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APR-D | AVALICON</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --sidebar-bg: #f5f7fa;
@@ -839,29 +841,152 @@
     }
 
     function gerarPDF() {
-        const btnDesk = document.getElementById('btnGerar');
-        const btnMob  = document.getElementById('mob-btnGerar');
-        const btn = (window.innerWidth <= 768 ? btnMob : btnDesk) || btnDesk || btnMob;
+        const isMobile = window.innerWidth <= 768;
+        const btn = isMobile
+            ? document.getElementById('mob-btnGerar')
+            : document.getElementById('btnGerar');
+        if (!btn) return;
         btn.textContent = '⌛ Aguarde...';
         btn.disabled = true;
 
-        // Serializa TODO o estado DOM → atributos HTML antes de pegar outerHTML.
-        // Isso garante que checkboxes marcados e valores digitados apareçam no print,
-        // independente de mobile ou desktop.
-        document.querySelectorAll('#documento-pdf input').forEach(inp => {
-            if (inp.type === 'checkbox' || inp.type === 'radio') {
-                if (inp.checked) inp.setAttribute('checked', 'checked');
-                else inp.removeAttribute('checked');
-            } else {
-                inp.setAttribute('value', inp.value);
+        if (isMobile) {
+            // MOBILE: html2canvas + jsPDF com clone off-screen
+            // (window.print() é bloqueado/inconsistente no Android Chrome)
+            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                alert('Carregando bibliotecas... Aguarde alguns segundos e tente novamente.');
+                btn.textContent = '🖨 Gerar PDF';
+                btn.disabled = false;
+                return;
             }
-        });
-        // Serializa contenteditable
-        document.querySelectorAll('#documento-pdf [contenteditable]').forEach(el => {
-            el.setAttribute('data-text', el.innerText);
+            gerarPDFCanvas(btn);
+        } else {
+            // DESKTOP: serializa estado DOM → outerHTML → window.print() (intocado)
+            document.querySelectorAll('#documento-pdf input').forEach(inp => {
+                if (inp.type === 'checkbox' || inp.type === 'radio') {
+                    if (inp.checked) inp.setAttribute('checked', 'checked');
+                    else inp.removeAttribute('checked');
+                } else {
+                    inp.setAttribute('value', inp.value);
+                }
+            });
+            document.querySelectorAll('#documento-pdf [contenteditable]').forEach(el => {
+                el.setAttribute('data-text', el.innerText);
+            });
+            gerarPDFPrint(btn);
+        }
+    }
+
+    function gerarPDFCanvas(btn) {
+        const original = document.getElementById('documento-pdf');
+
+        // ── 1. Criar wrapper off-screen em tamanho A4 real ──
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = [
+            'position:fixed',
+            'top:0',
+            'left:-9999px',
+            'width:794px',
+            'height:1123px',
+            'overflow:hidden',
+            'background:#fff',
+            'z-index:-9999',
+            'pointer-events:none'
+        ].join(';');
+        document.body.appendChild(wrapper);
+
+        // ── 2. Clonar o documento A4 ──
+        const clone = original.cloneNode(true);
+        clone.id = 'documento-pdf-clone';
+        clone.style.cssText = [
+            'width:794px',
+            'min-height:1123px',
+            'padding:6mm 8mm 5mm',
+            'background:#fff',
+            'color:#000',
+            'font-family:Arial,Helvetica,sans-serif',
+            'font-size:9px',
+            'display:flex',
+            'flex-direction:column',
+            'overflow:hidden',
+            'box-sizing:border-box',
+            'transform:none',
+            'box-shadow:none'
+        ].join(';');
+        wrapper.appendChild(clone);
+
+        // ── 3. Substituir <input type="text"> por <span> com o valor real ──
+        // html2canvas lê o atributo HTML, não o estado DOM — por isso precisamos do clone
+        const origTextInputs = Array.from(original.querySelectorAll('input:not([type="checkbox"]):not([type="radio"])'));
+        const cloneTextInputs = Array.from(clone.querySelectorAll('input:not([type="checkbox"]):not([type="radio"])'));
+        origTextInputs.forEach((origInp, i) => {
+            const cloneInp = cloneTextInputs[i];
+            if (!cloneInp) return;
+            const span = document.createElement('span');
+            span.textContent = origInp.value;
+            // Herdar estilos computados críticos
+            const cs = window.getComputedStyle(origInp);
+            span.style.cssText = [
+                'display:inline-block',
+                'font-family:Arial,sans-serif',
+                'font-size:' + cs.fontSize,
+                'font-weight:' + cs.fontWeight,
+                'color:#000',
+                'background:transparent',
+                'border:none',
+                'outline:none',
+                'padding:0',
+                'margin:0',
+                'min-width:' + cs.minWidth,
+                'flex:' + cs.flex,
+                'text-align:' + cs.textAlign,
+                'vertical-align:middle'
+            ].join(';');
+            cloneInp.parentNode.replaceChild(span, cloneInp);
         });
 
-        gerarPDFPrint(btn);
+        // ── 4. Sincronizar checkboxes ──
+        const origCbs = Array.from(original.querySelectorAll('input[type="checkbox"]'));
+        const cloneCbs = Array.from(clone.querySelectorAll('input[type="checkbox"]'));
+        origCbs.forEach((origCb, i) => {
+            if (!cloneCbs[i]) return;
+            cloneCbs[i].checked = origCb.checked;
+        });
+
+        // ── 5. Aguardar render do clone e capturar ──
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                html2canvas(clone, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    width: 794,
+                    height: 1123,
+                    scrollX: 0,
+                    scrollY: 0,
+                    logging: false,
+                    imageTimeout: 0,
+                    removeContainer: true
+                }).then(canvas => {
+                    document.body.removeChild(wrapper);
+
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                    pdf.save('APR_AVALICON.pdf');
+
+                    btn.textContent = '🖨 Gerar PDF';
+                    btn.disabled = false;
+                }).catch(err => {
+                    if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
+                    console.error('html2canvas error:', err);
+                    alert('Erro ao gerar PDF: ' + err.message + '\nTente novamente.');
+                    btn.textContent = '🖨 Gerar PDF';
+                    btn.disabled = false;
+                });
+            }, 400);
+        });
     }
 
     function gerarPDFPrint(btn) {
