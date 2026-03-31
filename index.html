@@ -231,7 +231,7 @@
             body.printing #print-container #documento-pdf { display:flex !important; flex-direction:column !important; box-shadow:none !important; margin:0 !important; transform:none !important; }
         }
         /* MOBILE */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             body { display: block !important; height: auto; overflow: auto; background: #f0f4f8; }
             .sidebar { display: none !important; }
             .workspace { display: none !important; }
@@ -768,7 +768,7 @@
 
     // SCALE DINÂMICO PARA MOBILE
     function ajustarEscalaMobile() {
-        if (window.innerWidth > 768) return;
+        if (window.innerWidth > 1024) return;
         const doc = document.getElementById('documento-pdf');
         const wrapper = document.getElementById('doc-wrapper');
         const disponivel = wrapper.clientWidth - 16;
@@ -841,7 +841,7 @@
     }
 
     function gerarPDF() {
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 1024;
         const btn = isMobile
             ? document.getElementById('mob-btnGerar')
             : document.getElementById('btnGerar');
