@@ -226,6 +226,15 @@
         }
         .doc-footer a { color: #000; text-decoration: none; }
         /* IMPRESSÃO */
+        /* ── ASSINATURA DIGITAL ── */
+        .sig-pad-wrap { background:#f8fafc; border:1px solid #e2e6ea; border-radius:8px; overflow:hidden; }
+        .sig-pad-label { font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; padding:6px 10px 4px; display:flex; justify-content:space-between; align-items:center; }
+        .sig-pad-label button { font-size:0.65rem; color:#dc2626; background:none; border:none; cursor:pointer; font-family:'Inter',sans-serif; font-weight:600; padding:0; }
+        .sig-canvas { display:block; width:100%; height:80px; background:#fff; cursor:crosshair; touch-action:none; }
+        .mob-elab-card { background:#f8fafc; border:1px solid #e2e6ea; border-radius:10px; padding:0.8rem; display:flex; flex-direction:column; gap:0.5rem; }
+        .mob-elab-card-num { font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; }
+        .mob-elab-card-nome { font-size:0.88rem; font-weight:600; color:#1e293b; }
+        .mob-elab-card-termino { font-size:0.75rem; color:#64748b; }
         @media print {
             @page { size:A4 portrait; margin:0; }
             * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
@@ -461,20 +470,36 @@
     </div>
 
     <div class="mob-section">
-        <div class="mob-section-title">✍️ Elaboradores</div>
+        <div class="mob-section-title">✍️ Elaboradores e Assinaturas</div>
         <div class="mob-section-body">
-            <div id="mob-elab-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
-            <div style="display:flex;gap:8px;">
-                <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-                    <label class="mob-label">Nome / CPF</label>
-                    <input type="text" class="mob-input" id="mob-sNome" placeholder="Nome completo / CPF" onkeydown="if(event.key==='Enter') mobAdicionarNome()">
+            <!-- Lista de elaboradores já adicionados com seus pads de assinatura -->
+            <div id="mob-elab-list" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+
+            <!-- Formulário para adicionar novo elaborador -->
+            <div style="background:#fff;border:1.5px dashed #cbd5e1;border-radius:10px;padding:0.8rem;display:flex;flex-direction:column;gap:0.6rem;">
+                <div style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Novo Elaborador</div>
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                        <label class="mob-label">Nome / CPF</label>
+                        <input type="text" class="mob-input" id="mob-sNome" placeholder="Nome completo / CPF">
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                        <label class="mob-label">Data/Hora Término</label>
+                        <input type="text" class="mob-input" id="mob-sTermino" placeholder="dd/mm/aaaa hh:mm" maxlength="16" oninput="mascaraDataHora(this)">
+                    </div>
                 </div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-                    <label class="mob-label">Data/Hora Término</label>
-                    <input type="text" class="mob-input" id="mob-sTermino" placeholder="dd/mm/aaaa hh:mm" maxlength="16" oninput="mascaraDataHora(this)">
+                <div>
+                    <label class="mob-label">Assinatura <span style="font-weight:400;color:#94a3b8">(desenhe abaixo)</span></label>
+                    <div class="sig-pad-wrap">
+                        <div class="sig-pad-label">
+                            <span>Assine no espaço abaixo</span>
+                            <button type="button" onclick="limparSigPadTemp()">✕ Limpar</button>
+                        </div>
+                        <canvas id="sig-canvas-temp" class="sig-canvas" height="120"></canvas>
+                    </div>
                 </div>
+                <button class="mob-btn-add" onclick="mobAdicionarNome()">＋ Confirmar e Adicionar</button>
             </div>
-            <button class="mob-btn-add" onclick="mobAdicionarNome()">＋ Adicionar Elaborador</button>
         </div>
     </div>
 
@@ -706,33 +731,124 @@
         }
     }
 
+    // ── SIGNATURE PAD ──
+    // Canvas temporário para o próximo elaborador
+    let _sigCtx = null, _sigDrawing = false, _sigHasData = false;
+
+    function initSigPad() {
+        const canvas = document.getElementById('sig-canvas-temp');
+        if (!canvas) return;
+        // Ajustar resolução para DPR
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr || 400;
+        canvas.height = 120 * dpr;
+        canvas.style.height = '80px';
+        _sigCtx = canvas.getContext('2d');
+        _sigCtx.scale(dpr, dpr);
+        _sigCtx.strokeStyle = '#1e293b';
+        _sigCtx.lineWidth = 2;
+        _sigCtx.lineCap = 'round';
+        _sigCtx.lineJoin = 'round';
+        _sigDrawing = false;
+        _sigHasData = false;
+
+        function getPos(e) {
+            const r = canvas.getBoundingClientRect();
+            const src = e.touches ? e.touches[0] : e;
+            return { x: src.clientX - r.left, y: src.clientY - r.top };
+        }
+        function start(e) {
+            e.preventDefault();
+            _sigDrawing = true;
+            _sigHasData = true;
+            const p = getPos(e);
+            _sigCtx.beginPath();
+            _sigCtx.moveTo(p.x, p.y);
+        }
+        function move(e) {
+            if (!_sigDrawing) return;
+            e.preventDefault();
+            const p = getPos(e);
+            _sigCtx.lineTo(p.x, p.y);
+            _sigCtx.stroke();
+        }
+        function end(e) { _sigDrawing = false; }
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        canvas.addEventListener('mouseup', end);
+        canvas.addEventListener('touchstart', start, { passive: false });
+        canvas.addEventListener('touchmove', move, { passive: false });
+        canvas.addEventListener('touchend', end);
+    }
+
+    function limparSigPadTemp() {
+        const canvas = document.getElementById('sig-canvas-temp');
+        if (!canvas || !_sigCtx) return;
+        _sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+        _sigHasData = false;
+    }
+
     // Elaboradores no mobile
     function mobAdicionarNome() {
         const nome = document.getElementById('mob-sNome').value.trim();
         const termino = document.getElementById('mob-sTermino').value.trim();
         if (!nome) { alert('Digite o Nome/CPF!'); return; }
+
+        // Captura imagem da assinatura desenhada
+        const tempCanvas = document.getElementById('sig-canvas-temp');
+        const sigDataURL = (_sigHasData && tempCanvas) ? tempCanvas.toDataURL('image/png') : null;
+
+        // Preenche na tabela A4
         const cols = document.querySelectorAll('.col-nome');
-        let inserido = false;
-        for (let inp of cols) {
-            if (inp.value === '') {
-                inp.value = nome;
-                autoShrink(inp);
-                const row = inp.closest('.sig-div-row');
-                if (termino && row) row.querySelector('.sig-time').value = termino;
+        let rowIndex = -1, inserido = false;
+        for (let i = 0; i < cols.length; i++) {
+            if (cols[i].value === '') {
+                cols[i].value = nome;
+                autoShrink(cols[i]);
+                const row = cols[i].closest('.sig-div-row');
+                if (row) {
+                    if (termino) row.querySelector('.sig-time').value = termino;
+                    // Insere assinatura na célula do meio
+                    if (sigDataURL) {
+                        const sigCell = row.querySelectorAll('.sig-div-cell')[1];
+                        sigCell.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = sigDataURL;
+                        img.setAttribute('data-sig', 'true');
+                        img.style.cssText = 'max-width:100%;max-height:26px;object-fit:contain;display:block;margin:auto;';
+                        sigCell.appendChild(img);
+                    }
+                }
+                rowIndex = i;
                 inserido = true;
                 break;
             }
         }
         if (!inserido) { alert('Limite de elaboradores atingido!'); return; }
+
+        // Mostra card na lista mobile com miniatura da assinatura
         const list = document.getElementById('mob-elab-list');
-        const item = document.createElement('div');
-        item.className = 'mob-elab-row';
-        item.innerHTML = `<div class="mob-elab-num">Elaborador ${list.children.length + 1}</div>
-            <div style="font-size:0.85rem;font-weight:600;color:#1e293b">${nome}</div>
-            ${termino ? `<div style="font-size:0.75rem;color:#64748b">Término: ${termino}</div>` : ''}`;
-        list.appendChild(item);
+        const n = list.children.length + 1;
+        const card = document.createElement('div');
+        card.className = 'mob-elab-card';
+        card.innerHTML = `
+            <div class="mob-elab-card-num">Elaborador ${n}</div>
+            <div class="mob-elab-card-nome">${nome}</div>
+            ${termino ? `<div class="mob-elab-card-termino">⏱ ${termino}</div>` : ''}
+            ${sigDataURL ? `
+            <div style="background:#fff;border:1px solid #e2e6ea;border-radius:6px;padding:4px 8px;">
+                <div style="font-size:0.62rem;color:#94a3b8;margin-bottom:2px;">ASSINATURA</div>
+                <img src="${sigDataURL}" style="max-height:36px;max-width:100%;object-fit:contain;display:block;">
+            </div>` : '<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;">Sem assinatura</div>'}
+        `;
+        list.appendChild(card);
+
+        // Limpa form
         document.getElementById('mob-sNome').value = '';
         document.getElementById('mob-sTermino').value = '';
+        limparSigPadTemp();
         document.getElementById('mob-sNome').focus();
     }
 
@@ -813,6 +929,17 @@
     window.addEventListener('load', () => {
         ajustarEscalaMobile();
         initMobileSync();
+        // Inicializa o signature pad apenas em mobile/tablet
+        if (window.innerWidth <= 1024) {
+            // Aguarda o canvas ser renderizado para pegar dimensões corretas
+            requestAnimationFrame(() => setTimeout(initSigPad, 100));
+        }
+    });
+    // Re-init se usuário rotacionar o dispositivo
+    window.addEventListener('resize', () => {
+        if (window.innerWidth <= 1024) {
+            setTimeout(initSigPad, 200);
+        }
     });
 
     // DESKTOP: Adicionar risco extra
