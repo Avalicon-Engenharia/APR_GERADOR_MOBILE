@@ -489,13 +489,14 @@
                     </div>
                 </div>
                 <div>
-                    <label class="mob-label">Assinatura <span style="font-weight:400;color:#94a3b8">(desenhe abaixo)</span></label>
-                    <div class="sig-pad-wrap">
-                        <div class="sig-pad-label">
-                            <span>Assine no espaço abaixo</span>
-                            <button type="button" onclick="limparSigPadTemp()">✕ Limpar</button>
-                        </div>
-                        <canvas id="sig-canvas-temp" class="sig-canvas" height="120"></canvas>
+                    <label class="mob-label">Assinatura <span style="font-weight:400;color:#94a3b8">(toque para assinar)</span></label>
+                    <div id="sig-preview-wrap" onclick="abrirModalAssinatura()" style="
+                        background:#fff; border:1.5px dashed #94a3b8; border-radius:8px;
+                        height:64px; display:flex; align-items:center; justify-content:center;
+                        cursor:pointer; overflow:hidden; position:relative;
+                    ">
+                        <span id="sig-preview-placeholder" style="font-size:0.8rem;color:#94a3b8;pointer-events:none;">✍ Toque aqui para assinar</span>
+                        <img id="sig-preview-img" src="" alt="" style="display:none;max-height:60px;max-width:100%;object-fit:contain;">
                     </div>
                 </div>
                 <button class="mob-btn-add" onclick="mobAdicionarNome()">＋ Confirmar e Adicionar</button>
@@ -731,63 +732,118 @@
         }
     }
 
-    // ── SIGNATURE PAD ──
-    // Canvas temporário para o próximo elaborador
-    let _sigCtx = null, _sigDrawing = false, _sigHasData = false;
+    // ── SIGNATURE PAD — MODAL FULLSCREEN ──
+    let _sigModalCtx = null, _sigModalDrawing = false, _sigDataURL = null;
 
-    function initSigPad() {
-        const canvas = document.getElementById('sig-canvas-temp');
+    function _initModalCanvas() {
+        const canvas = document.getElementById('sig-canvas-modal');
         if (!canvas) return;
-        // Ajustar resolução para DPR
         const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr || 400;
-        canvas.height = 120 * dpr;
-        canvas.style.height = '80px';
-        _sigCtx = canvas.getContext('2d');
-        _sigCtx.scale(dpr, dpr);
-        _sigCtx.strokeStyle = '#1e293b';
-        _sigCtx.lineWidth = 2;
-        _sigCtx.lineCap = 'round';
-        _sigCtx.lineJoin = 'round';
-        _sigDrawing = false;
-        _sigHasData = false;
+        canvas.width  = canvas.offsetWidth  * dpr;
+        canvas.height = canvas.offsetHeight * dpr;
+        _sigModalCtx = canvas.getContext('2d');
+        _sigModalCtx.scale(dpr, dpr);
+        _sigModalCtx.strokeStyle = '#1e293b';
+        _sigModalCtx.lineWidth = 2.5;
+        _sigModalCtx.lineCap = 'round';
+        _sigModalCtx.lineJoin = 'round';
+        _sigModalCtx.clearRect(0, 0, canvas.width, canvas.height);
+        _sigModalDrawing = false;
 
         function getPos(e) {
             const r = canvas.getBoundingClientRect();
             const src = e.touches ? e.touches[0] : e;
+            return { x: (src.clientX - r.left), y: (src.clientY - r.top) };
+        }
+        // remover listeners antigos clonando o canvas
+        const fresh = canvas.cloneNode(true);
+        canvas.parentNode.replaceChild(fresh, canvas);
+        _sigModalCtx = fresh.getContext('2d');
+        _sigModalCtx.scale(dpr, dpr);
+        _sigModalCtx.strokeStyle = '#1e293b';
+        _sigModalCtx.lineWidth = 2.5;
+        _sigModalCtx.lineCap = 'round';
+        _sigModalCtx.lineJoin = 'round';
+
+        function gp(e) {
+            const r = fresh.getBoundingClientRect();
+            const src = e.touches ? e.touches[0] : e;
             return { x: src.clientX - r.left, y: src.clientY - r.top };
         }
-        function start(e) {
-            e.preventDefault();
-            _sigDrawing = true;
-            _sigHasData = true;
-            const p = getPos(e);
-            _sigCtx.beginPath();
-            _sigCtx.moveTo(p.x, p.y);
-        }
-        function move(e) {
-            if (!_sigDrawing) return;
-            e.preventDefault();
-            const p = getPos(e);
-            _sigCtx.lineTo(p.x, p.y);
-            _sigCtx.stroke();
-        }
-        function end(e) { _sigDrawing = false; }
+        function start(e) { e.preventDefault(); _sigModalDrawing = true; const p = gp(e); _sigModalCtx.beginPath(); _sigModalCtx.moveTo(p.x, p.y); }
+        function move(e)  { if (!_sigModalDrawing) return; e.preventDefault(); const p = gp(e); _sigModalCtx.lineTo(p.x, p.y); _sigModalCtx.stroke(); }
+        function end(e)   { _sigModalDrawing = false; }
 
-        canvas.addEventListener('mousedown', start);
-        canvas.addEventListener('mousemove', move);
-        canvas.addEventListener('mouseup', end);
-        canvas.addEventListener('touchstart', start, { passive: false });
-        canvas.addEventListener('touchmove', move, { passive: false });
-        canvas.addEventListener('touchend', end);
+        fresh.addEventListener('mousedown', start);
+        fresh.addEventListener('mousemove', move);
+        fresh.addEventListener('mouseup',   end);
+        fresh.addEventListener('touchstart', start, { passive: false });
+        fresh.addEventListener('touchmove',  move,  { passive: false });
+        fresh.addEventListener('touchend',   end);
     }
 
+    function abrirModalAssinatura() {
+        const modal = document.getElementById('sig-modal');
+        modal.style.display = 'flex';
+        // Travar scroll do body
+        document.body.style.overflow = 'hidden';
+        // Iniciar canvas após modal estar visível (precisa de dimensões reais)
+        requestAnimationFrame(() => setTimeout(_initModalCanvas, 50));
+    }
+
+    function limparModalSig() {
+        const canvas = document.getElementById('sig-canvas-modal');
+        if (!canvas || !_sigModalCtx) return;
+        _sigModalCtx.clearRect(0, 0, canvas.offsetWidth + 100, canvas.offsetHeight + 100);
+        _sigModalDrawing = false;
+    }
+
+    function cancelarModalSig() {
+        document.getElementById('sig-modal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function confirmarModalSig() {
+        const canvas = document.getElementById('sig-canvas-modal');
+        if (!canvas) return;
+        // Verificar se tem traço
+        const ctx = canvas.getContext('2d');
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const temTracado = Array.from(data).some((v, i) => i % 4 === 3 && v > 0);
+        if (!temTracado) {
+            alert('Por favor, assine antes de confirmar.');
+            return;
+        }
+        // Captura com fundo branco
+        const offscreen = document.createElement('canvas');
+        offscreen.width  = canvas.width;
+        offscreen.height = canvas.height;
+        const octx = offscreen.getContext('2d');
+        octx.fillStyle = '#fff';
+        octx.fillRect(0, 0, offscreen.width, offscreen.height);
+        octx.drawImage(canvas, 0, 0);
+        _sigDataURL = offscreen.toDataURL('image/png');
+
+        // Atualiza preview
+        const img = document.getElementById('sig-preview-img');
+        const ph  = document.getElementById('sig-preview-placeholder');
+        img.src = _sigDataURL;
+        img.style.display = 'block';
+        ph.style.display  = 'none';
+
+        // Fechar modal
+        document.getElementById('sig-modal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Compat: initSigPad chamado no load — não faz nada agora (modal faz tudo)
+    function initSigPad() {}
     function limparSigPadTemp() {
-        const canvas = document.getElementById('sig-canvas-temp');
-        if (!canvas || !_sigCtx) return;
-        _sigCtx.clearRect(0, 0, canvas.width, canvas.height);
-        _sigHasData = false;
+        _sigDataURL = null;
+        const img = document.getElementById('sig-preview-img');
+        const ph  = document.getElementById('sig-preview-placeholder');
+        if (img) { img.src = ''; img.style.display = 'none'; }
+        if (ph)  { ph.style.display = 'block'; }
     }
 
     // Elaboradores no mobile
@@ -796,9 +852,8 @@
         const termino = document.getElementById('mob-sTermino').value.trim();
         if (!nome) { alert('Digite o Nome/CPF!'); return; }
 
-        // Captura imagem da assinatura desenhada
-        const tempCanvas = document.getElementById('sig-canvas-temp');
-        const sigDataURL = (_sigHasData && tempCanvas) ? tempCanvas.toDataURL('image/png') : null;
+        // Usa a assinatura capturada no modal
+        const sigDataURL = _sigDataURL || null;
 
         // Preenche na tabela A4
         const cols = document.querySelectorAll('.col-nome');
@@ -848,6 +903,7 @@
         // Limpa form
         document.getElementById('mob-sNome').value = '';
         document.getElementById('mob-sTermino').value = '';
+        _sigDataURL = null;
         limparSigPadTemp();
         document.getElementById('mob-sNome').focus();
     }
@@ -1199,5 +1255,60 @@ html,body { width:210mm; background:white; -webkit-print-color-adjust:exact; pri
         btn.disabled = false;
     }
 </script>
+
+<!-- ── MODAL DE ASSINATURA FULLSCREEN ── -->
+<div id="sig-modal" style="
+    display:none; position:fixed; inset:0; z-index:99999;
+    background:#fff; flex-direction:column;
+">
+    <!-- Topbar do modal -->
+    <div style="
+        display:flex; align-items:center; justify-content:space-between;
+        padding:0.9rem 1rem; background:#1e293b; color:#fff;
+        flex-shrink:0;
+    ">
+        <div>
+            <div style="font-size:0.85rem;font-weight:700;">Assinatura Digital</div>
+            <div style="font-size:0.68rem;color:#94a3b8;margin-top:2px;">Assine com o dedo no espaço abaixo</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button onclick="limparModalSig()" style="
+                background:#374151; color:#fff; border:none; border-radius:6px;
+                padding:0.5rem 0.9rem; font-size:0.8rem; font-weight:600;
+                font-family:'Inter',sans-serif; cursor:pointer;
+            ">🗑 Limpar</button>
+            <button onclick="cancelarModalSig()" style="
+                background:transparent; color:#94a3b8; border:1px solid #374151;
+                border-radius:6px; padding:0.5rem 0.9rem; font-size:0.8rem;
+                font-family:'Inter',sans-serif; cursor:pointer;
+            ">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Guia horizontal -->
+    <div style="position:relative; flex:1; overflow:hidden; background:#f8fafc;">
+        <div style="
+            position:absolute; left:5%; right:5%;
+            top:50%; transform:translateY(0);
+            border-top:1px dashed #cbd5e1; pointer-events:none; z-index:1;
+            top:55%;
+        "></div>
+        <canvas id="sig-canvas-modal" style="
+            display:block; width:100%; height:100%;
+            cursor:crosshair; touch-action:none; background:transparent;
+        "></canvas>
+    </div>
+
+    <!-- Botão Concluir -->
+    <div style="padding:1rem; background:#fff; border-top:1px solid #e2e6ea; flex-shrink:0;">
+        <button onclick="confirmarModalSig()" style="
+            width:100%; padding:0.9rem; background:#2563eb; color:#fff;
+            border:none; border-radius:10px; font-size:1rem; font-weight:700;
+            font-family:'Inter',sans-serif; cursor:pointer;
+            box-shadow:0 4px 12px rgba(37,99,235,0.3);
+        ">✓ Concluir Assinatura</button>
+    </div>
+</div>
+
 </body>
 </html>
