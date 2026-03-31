@@ -954,7 +954,7 @@
                         const img = document.createElement('img');
                         img.src = sigDataURL;
                         img.setAttribute('data-sig', 'true');
-                        img.style.cssText = 'width:100%;height:30px;object-fit:contain;display:block;';
+                        img.style.cssText = 'max-height:28px;width:auto;max-width:100%;display:block;margin:auto;';
                         sigCell.appendChild(img);
                     }
                 }
@@ -1049,7 +1049,7 @@
 
     // SCALE DINÂMICO PARA MOBILE
     function ajustarEscalaMobile() {
-        if (window.innerWidth > 1024) return;
+        if (window.innerWidth > 1024) return;  // escala A4 só em telas pequenas
         const doc = document.getElementById('documento-pdf');
         const wrapper = document.getElementById('doc-wrapper');
         const disponivel = wrapper.clientWidth - 16;
@@ -1068,14 +1068,14 @@
         ajustarEscalaMobile();
         initMobileSync();
         // Inicializa o signature pad apenas em mobile/tablet
-        if (window.innerWidth <= 1024) {
+        if (window.innerWidth <= 1024 || navigator.maxTouchPoints > 0) {
             // Aguarda o canvas ser renderizado para pegar dimensões corretas
             requestAnimationFrame(() => setTimeout(initSigPad, 100));
         }
     });
     // Re-init se usuário rotacionar o dispositivo
     window.addEventListener('resize', () => {
-        if (window.innerWidth <= 1024) {
+        if (window.innerWidth <= 1024 || navigator.maxTouchPoints > 0) {
             setTimeout(initSigPad, 200);
         }
     });
@@ -1133,7 +1133,8 @@
     }
 
     function gerarPDF() {
-        const isMobile = window.innerWidth <= 1024;
+        // Touch device (tablet/mobile) OU largura <= 1024px → usa canvas+jsPDF para download garantido
+        const isMobile = window.innerWidth <= 1024 || navigator.maxTouchPoints > 0;
         const btn = isMobile
             ? document.getElementById('mob-btnGerar')
             : (document.getElementById('btnGerar') || document.getElementById('btnGerarSidebar'));
