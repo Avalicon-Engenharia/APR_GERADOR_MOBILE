@@ -285,6 +285,7 @@
             body.printing > * { display:none !important; }
             body.printing #print-container { display:block !important; position:fixed !important; top:0 !important; left:0 !important; width:210mm !important; height:297mm !important; background:white !important; z-index:99999 !important; }
             body.printing #print-container #documento-pdf { display:flex !important; flex-direction:column !important; box-shadow:none !important; margin:0 !important; transform:none !important; }
+            body.printing .sec { margin-top:0 !important; border-top:none !important; }
         }
         /* ── BOTÃO FLUTUANTE PDF (desktop/tablet) ── */
         .fab-pdf {
@@ -1376,7 +1377,7 @@ html,body { width:210mm; background:white; -webkit-print-color-adjust:exact; pri
 .id-cell{padding:4px 6px;font-size:10px;font-weight:bold;min-height:26px;flex:1;border-right:1px solid #000;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .id-cell:last-child{border-right:none}
 .id-input{border:none;background:transparent;font-size:10px;font-family:Arial;font-weight:bold;flex:1;min-width:30px}
-.sec{background:#d9d9d9;border:1.5px solid #000;margin-top:3px;text-align:center;padding:4px;font-size:10px;font-weight:bold;text-transform:uppercase;flex-shrink:0}
+.sec{background:#d9d9d9;border:1.5px solid #000;border-top:none;text-align:center;padding:4px;font-size:10px;font-weight:bold;text-transform:uppercase;flex-shrink:0}
 .grid{display:flex;flex-wrap:wrap;border-left:1.5px solid #000;border-right:1.5px solid #000;border-bottom:1.5px solid #000;flex-shrink:0}
 .ci{padding:3px 5px;display:flex;align-items:flex-start;gap:4px;font-size:9.5px;line-height:1.35;border-right:1px solid #000;border-bottom:1px solid #000;min-height:23px}
 .ci input[type="checkbox"]{width:10px;height:10px;flex-shrink:0;margin-top:1px;accent-color:#000}
@@ -1397,9 +1398,9 @@ html,body { width:210mm; background:white; -webkit-print-color-adjust:exact; pri
 .sig-cols{display:flex;border-bottom:1px solid #000}
 .sig-col-h{background:#d9d9d9;padding:3px 5px;font-size:9.5px;font-weight:bold;text-align:center;border-right:1px solid #000}
 .sig-col-h:last-child{border-right:none}
-.sig-div-row{display:flex;border-bottom:1px solid #000;min-height:36px}
+.sig-div-row{display:flex;border-bottom:1px solid #000;min-height:28px}
 .sig-div-row:last-child{border-bottom:none}
-.sig-div-cell{border-right:1px solid #000;padding:2px 4px;min-height:36px;display:flex;align-items:center}
+.sig-div-cell{border-right:1px solid #000;padding:2px 4px;min-height:28px;display:flex;align-items:center}
 .sig-div-cell:last-child{border-right:none}
 .sig-div-cell input{width:100%;border:none;background:transparent;font-size:9.5px;font-family:Arial}
 .spacer{flex:1;min-height:0;page-break-after:avoid}
