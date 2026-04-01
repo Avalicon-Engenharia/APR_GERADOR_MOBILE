@@ -175,7 +175,7 @@
         .sec {
             background: #d9d9d9; border: 1.5px solid #000;
             text-align: center; padding: 4px; font-size: 10px; font-weight: bold;
-            text-transform: uppercase; flex-shrink: 0; margin-top: 5px;
+            text-transform: uppercase; flex-shrink: 0; margin-top: 3px;
         }
         /* Primeira seção não precisa de margem acima */
         .id-strip + .sec { margin-top: 0; }
@@ -258,12 +258,14 @@
             outline: none; font-size: 9.5px; font-family: Arial;
         }
         /* ESPAÇADOR */
-        .spacer { flex: 1; min-height: 4px; }
+        .spacer { flex: 1; min-height: 0; }
         /* RODAPÉ */
         .doc-footer {
             border-top: none; padding-top: 4px;
             text-align: center; font-size: 8px; font-weight: bold;
             line-height: 1.7; flex-shrink: 0;
+            page-break-inside: avoid; break-inside: avoid;
+            page-break-before: avoid; break-before: avoid;
         }
         .doc-footer a { color: #000; text-decoration: none; }
         /* IMPRESSÃO */
@@ -1374,7 +1376,7 @@ html,body { width:210mm; background:white; -webkit-print-color-adjust:exact; pri
 .id-cell{padding:4px 6px;font-size:10px;font-weight:bold;min-height:26px;flex:1;border-right:1px solid #000;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .id-cell:last-child{border-right:none}
 .id-input{border:none;background:transparent;font-size:10px;font-family:Arial;font-weight:bold;flex:1;min-width:30px}
-.sec{background:#d9d9d9;border:1.5px solid #000;margin-top:5px;text-align:center;padding:4px;font-size:10px;font-weight:bold;text-transform:uppercase;flex-shrink:0}
+.sec{background:#d9d9d9;border:1.5px solid #000;margin-top:3px;text-align:center;padding:4px;font-size:10px;font-weight:bold;text-transform:uppercase;flex-shrink:0}
 .grid{display:flex;flex-wrap:wrap;border-left:1.5px solid #000;border-right:1.5px solid #000;border-bottom:1.5px solid #000;flex-shrink:0}
 .ci{padding:3px 5px;display:flex;align-items:flex-start;gap:4px;font-size:9.5px;line-height:1.35;border-right:1px solid #000;border-bottom:1px solid #000;min-height:23px}
 .ci input[type="checkbox"]{width:10px;height:10px;flex-shrink:0;margin-top:1px;accent-color:#000}
@@ -1400,8 +1402,8 @@ html,body { width:210mm; background:white; -webkit-print-color-adjust:exact; pri
 .sig-div-cell{border-right:1px solid #000;padding:2px 4px;min-height:36px;display:flex;align-items:center}
 .sig-div-cell:last-child{border-right:none}
 .sig-div-cell input{width:100%;border:none;background:transparent;font-size:9.5px;font-family:Arial}
-.spacer{flex:1;min-height:4px}
-.doc-footer{border-top:none;padding-top:4px;text-align:center;font-size:8px;font-weight:bold;line-height:1.7;flex-shrink:0}
+.spacer{flex:1;min-height:0;page-break-after:avoid}
+.doc-footer{border-top:none;padding-top:4px;text-align:center;font-size:8px;font-weight:bold;line-height:1.7;flex-shrink:0;page-break-inside:avoid;break-inside:avoid;page-break-before:avoid;break-before:avoid}
 [contenteditable]{outline:none}
 </style></head><body>${docHTML}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},1500);};<\/script></body></html>`;
         const janela = window.open('', '_blank');
