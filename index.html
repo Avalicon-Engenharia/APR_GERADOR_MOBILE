@@ -351,6 +351,21 @@
         }
         .fab-clear-btn:hover { color: var(--danger); border-color: var(--danger); }
 
+
+        /* Crédito do desenvolvedor */
+        .dev-credit {
+            margin-top: auto;
+            padding: 0.6rem 1rem 0.5rem;
+            text-align: center;
+            font-size: 0.58rem;
+            color: #c0d8d8;
+            letter-spacing: 0.3px;
+            border-top: 1px solid rgba(178,216,216,0.25);
+        }
+        .dev-credit a {
+            color: #a0c8c8;
+            text-decoration: none;
+        }
         /* MOBILE */
         @media (max-width: 1024px) {
             body { display: block !important; height: auto; overflow: auto; background: #dff0f0; }
@@ -623,6 +638,11 @@
         </div>
     </div>
 
+    <!-- Crédito mobile -->
+    <div style="text-align:center;padding:1rem 0 0.5rem;font-size:0.6rem;color:#a0b8b8;letter-spacing:0.3px;">
+        Desenvolvido por Geneir Junior
+    </div>
+
 </div>
 
 <!-- MOBILE: RODAPÉ REMOVIDO — botão migrado para o header sticky -->
@@ -658,6 +678,7 @@
             <button class="btn btn-add" onclick="adicionarNome()">＋ Inserir na Tabela</button>
         </div>
     </div>
+    <div class="dev-credit">Desenvolvido por Geneir Junior</div>
     <div class="sidebar-footer">
         <button class="btn btn-pdf" id="btnGerarSidebar" onclick="gerarPDF()">🖨 Gerar PDF</button>
         <button class="btn btn-clear" onclick="if(confirm('Limpar tudo e recomeçar?')) location.reload()">🧹 Limpar Formulário</button>
